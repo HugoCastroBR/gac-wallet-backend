@@ -4,8 +4,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
-    .setTitle('Ganache Wallet Backend')
-    .setDescription('Backend for Ganache Wallet')
+    .setTitle('Gac Wallet Backend')
+    .setDescription('Backend for Gac Wallet')
     .setVersion('1.0')
     .build();
 
