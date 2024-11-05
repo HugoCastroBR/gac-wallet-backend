@@ -7,6 +7,7 @@ async function bootstrap() {
     .setTitle('Gac Wallet Backend')
     .setDescription('Backend for Gac Wallet')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);

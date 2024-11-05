@@ -208,7 +208,7 @@ describe('AuthService', () => {
         name: 'New Name',
       };
 
-      const result = await authService.updateUser(1, updateUserDto, {} as any);
+      const result = await authService.updateUser(1, updateUserDto);
       expect(result).toHaveProperty('id');
       expect(result).toHaveProperty('name');
       expect(result).toHaveProperty('email');
@@ -240,7 +240,7 @@ describe('AuthService', () => {
       };
 
       await expect(
-        authService.updateUser(1, updateUserDto, {} as any),
+        authService.updateUser(1, updateUserDto),
       ).rejects.toThrowError('Passwords does not match');
     });
 
@@ -253,7 +253,7 @@ describe('AuthService', () => {
       };
 
       await expect(
-        authService.updateUser(1, updateUserDto, {} as any),
+        authService.updateUser(1, updateUserDto),
       ).rejects.toThrowError('User not found');
     });
 
@@ -278,7 +278,7 @@ describe('AuthService', () => {
       };
 
       await expect(
-        authService.updateUser(1, updateUserDto, {} as any),
+        authService.updateUser(1, updateUserDto),
       ).rejects.toThrowError('Password is required');
     });
 
@@ -303,7 +303,7 @@ describe('AuthService', () => {
       };
 
       await expect(
-        authService.updateUser(1, updateUserDto, {} as any),
+        authService.updateUser(1, updateUserDto),
       ).rejects.toThrowError('Confirm password is required');
     });
   });

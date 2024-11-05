@@ -83,11 +83,7 @@ export class AuthController {
     @Param('id') id: string,
   ): Promise<any> {
     try {
-      const result = await this.authService.updateUser(
-        +id,
-        updateUserDto,
-        response,
-      );
+      const result = await this.authService.updateUser(+id, updateUserDto);
       return response.status(200).json({
         message: 'User updated successfully',
         data: result,

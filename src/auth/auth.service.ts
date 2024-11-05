@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Response } from 'express';
 import { PrismaService } from '../database/prisma.service';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
@@ -102,11 +101,7 @@ export class AuthService {
     });
   }
 
-  async updateUser(
-    userId: number,
-    updateUserDto: UpdateUserDto,
-    res: Response,
-  ): Promise<any> {
+  async updateUser(userId: number, updateUserDto: UpdateUserDto): Promise<any> {
     const user = await this.prismaService.user.findUnique({
       where: { id: userId },
     });
