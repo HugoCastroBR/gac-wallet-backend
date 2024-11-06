@@ -146,4 +146,11 @@ export class AuthService {
         throw new Error('Passwords does not match');
     }
   }
+
+  async deleteUser(token: string): Promise<any> {
+    const { email } = this.jwtService.verify(token);
+    return await this.prismaService.user.delete({
+      where: { email },
+    });
+  }
 }

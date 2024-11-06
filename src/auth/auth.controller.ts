@@ -8,6 +8,7 @@ import {
   Patch,
   UseGuards,
   Get,
+  Delete,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -86,6 +87,25 @@ export class AuthController {
       const result = await this.authService.updateUser(+id, updateUserDto);
       return response.status(200).json({
         message: 'User updated successfully',
+        data: result,
+      });
+    } catch (error) {
+      response.status(400).json({ error: error.message });
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Delete('me')
+  async deleteUser(
+    @Res() response: Response,
+    @Req() request: Request,
+  ): Promise<any> {
+    try {
+      const token = request.headers.authorization.split(' ')[1];
+      const result = await this.authService.deleteUser(token);
+      return response.status(200).json({
+        message: 'User deleted successfully',
         data: result,
       });
     } catch (error) {
