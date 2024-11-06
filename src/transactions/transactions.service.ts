@@ -13,10 +13,10 @@ export class TransactionsService {
   }
   async getAllWithPagination(
     userId: number,
-    page: number,
-    limit: number,
-    orderByProp?: string,
-    order?: string,
+    page = 1,
+    limit = 10,
+    orderByProp = 'createdAt',
+    order: 'asc' | 'desc' = 'asc',
     search?: string,
   ) {
     if (page < 1) {
@@ -25,21 +25,75 @@ export class TransactionsService {
     if (limit < 1) {
       limit = 1;
     }
+    // const transactions = await this.prisma.transaction.findMany({
+    //   skip: (page - 1) * limit,
+    //   take: limit,
+    //   orderBy: {
+    //     [orderByProp]: order,
+    //   },
+    //   where: {
+    //     OR: [
+    //       {
+    //         sentFromUserId: Number(userId),
+    //       },
+    //       {
+    //         sentToUserId: Number(userId),
+    //       },
+    //     ],
+    //     AND: [
+    //       {
+    //         description: {
+    //           contains: search || '',
+    //           mode: 'insensitive',
+    //         },
+    //       },
+    //     ],
+    //   },
+    // });
+
+    // const total = await this.prisma.transaction.count({
+    //   where: {
+    //     OR: [
+    //       {
+    //         sentFromUserId: Number(userId),
+    //       },
+    //       {
+    //         sentToUserId: Number(userId),
+    //       },
+    //     ],
+    //     AND: [
+    //       {
+    //         description: {
+    //           contains: search || '',
+    //           mode: 'insensitive',
+    //         },
+    //       },
+    //     ],
+    //   },
+    // });
     const transactions = await this.prisma.transaction.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (page - 1) * limit || 0,
+      take: limit || 10,
       orderBy: {
         [orderByProp]: order,
       },
+      include: {
+        sentToUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        sentFromUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
       where: {
-        OR: [
-          {
-            sentFromUserId: Number(userId),
-          },
-          {
-            sentToUserId: Number(userId),
-          },
-        ],
         AND: [
           {
             description: {
@@ -53,14 +107,6 @@ export class TransactionsService {
 
     const total = await this.prisma.transaction.count({
       where: {
-        OR: [
-          {
-            sentFromUserId: Number(userId),
-          },
-          {
-            sentToUserId: Number(userId),
-          },
-        ],
         AND: [
           {
             description: {
@@ -113,6 +159,37 @@ export class TransactionsService {
         valueBrl: createTransactionDto.valueBrl,
         reversed: createTransactionDto.reversed,
         description: createTransactionDto.description,
+      },
+    });
+
+    return transaction;
+  }
+
+  async createReverseTransaction(id: number) {
+    const transactionToReverse = await this.prisma.transaction.findUnique({
+      where: {
+        id: Number(id),
+      },
+      include: {
+        sentFromUser: true,
+        sentToUser: true,
+      },
+    });
+    const transaction = await this.prisma.transaction.create({
+      data: {
+        sentFromUser: {
+          connect: {
+            id: Number(transactionToReverse.sentToUser.id),
+          },
+        },
+        reversed: true,
+        sentToUser: {
+          connect: {
+            id: Number(transactionToReverse.sentFromUser.id),
+          },
+        },
+        valueBrl: transactionToReverse.valueBrl,
+        description: transactionToReverse.description,
       },
     });
 

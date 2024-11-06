@@ -25,8 +25,8 @@ export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
   @Get()
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  // @ApiBearerAuth()
+  // @UseGuards(JwtAuthGuard)
   async getAll(
     @Query() pagination: PaginationDTO,
     @Res() response: Response,
@@ -34,7 +34,8 @@ export class TransactionsController {
   ) {
     try {
       const res = await this.transactionsService.getAllWithPagination(
-        Number(req.user['id']),
+        // Number(req.user['id']),
+        1,
         Number(pagination.page),
         Number(pagination.itemsPerPage),
         pagination.orderBy,
@@ -66,6 +67,13 @@ export class TransactionsController {
       fromUserId,
       userId,
     );
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post(':id') // make a reverse transaction by id from transaction
+  async createReverseTransaction(@Param('id') id: number) {
+    return await this.transactionsService.createReverseTransaction(id);
   }
 
   @Put(':id')

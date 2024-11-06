@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDecimal, IsBoolean, IsString, IsNumber } from 'class-validator';
+import {
+  IsDecimal,
+  IsBoolean,
+  IsString,
+  IsNumber,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateTransactionDto {
   @ApiProperty()
@@ -8,7 +14,8 @@ export class CreateTransactionDto {
 
   @ApiProperty()
   @IsBoolean()
-  reversed: boolean;
+  @IsOptional()
+  reversed?: boolean;
 
   @ApiProperty()
   @IsString()
