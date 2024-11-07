@@ -3,6 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from '../database/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { AddMoneyDto } from './dto/add-mony.dto';
 
 @Injectable()
 export class UsersService {
@@ -104,5 +105,34 @@ export class UsersService {
       where: { id },
     });
     return user;
+  }
+
+  async addMoney(id: number, AddMoneyDto: AddMoneyDto) {
+    const verifyIfUserExists = await this.findOne(id);
+    if (!verifyIfUserExists) {
+      throw new Error('User not found');
+    }
+    const oldAmount = verifyIfUserExists.accountValueBrl;
+    const newAmount = Number(oldAmount) + Number(AddMoneyDto.amount);
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: { accountValueBrl: newAmount },
+    });
+    return user;
+  }
+
+  async getUserByEmail(email: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { email },
+      });
+      if (!user) {
+        throw new Error('User not found');
+      }
+      return user;
+    } catch (error) {
+      console.log(error);
+      throw new Error('User not found');
+    }
   }
 }

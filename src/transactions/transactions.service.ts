@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class TransactionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private usersService: UsersService,
+  ) {}
 
   async getAll() {
     const transactions = await this.prisma.transaction.findMany();
@@ -25,52 +29,6 @@ export class TransactionsService {
     if (limit < 1) {
       limit = 1;
     }
-    // const transactions = await this.prisma.transaction.findMany({
-    //   skip: (page - 1) * limit,
-    //   take: limit,
-    //   orderBy: {
-    //     [orderByProp]: order,
-    //   },
-    //   where: {
-    //     OR: [
-    //       {
-    //         sentFromUserId: Number(userId),
-    //       },
-    //       {
-    //         sentToUserId: Number(userId),
-    //       },
-    //     ],
-    //     AND: [
-    //       {
-    //         description: {
-    //           contains: search || '',
-    //           mode: 'insensitive',
-    //         },
-    //       },
-    //     ],
-    //   },
-    // });
-
-    // const total = await this.prisma.transaction.count({
-    //   where: {
-    //     OR: [
-    //       {
-    //         sentFromUserId: Number(userId),
-    //       },
-    //       {
-    //         sentToUserId: Number(userId),
-    //       },
-    //     ],
-    //     AND: [
-    //       {
-    //         description: {
-    //           contains: search || '',
-    //           mode: 'insensitive',
-    //         },
-    //       },
-    //     ],
-    //   },
-    // });
     const transactions = await this.prisma.transaction.findMany({
       skip: (page - 1) * limit || 0,
       take: limit || 10,
@@ -94,6 +52,14 @@ export class TransactionsService {
         },
       },
       where: {
+        OR: [
+          {
+            sentFromUserId: Number(userId),
+          },
+          {
+            sentToUserId: Number(userId),
+          },
+        ],
         AND: [
           {
             description: {
@@ -107,6 +73,14 @@ export class TransactionsService {
 
     const total = await this.prisma.transaction.count({
       where: {
+        OR: [
+          {
+            sentFromUserId: Number(userId),
+          },
+          {
+            sentToUserId: Number(userId),
+          },
+        ],
         AND: [
           {
             description: {
@@ -139,30 +113,42 @@ export class TransactionsService {
     };
   }
 
-  async create(
-    createTransactionDto: CreateTransactionDto,
-    fromUserId: number,
-    toUserId: number,
-  ) {
-    const transaction = await this.prisma.transaction.create({
-      data: {
-        sentFromUser: {
-          connect: {
-            id: Number(fromUserId),
-          },
-        },
-        sentToUser: {
-          connect: {
-            id: Number(toUserId),
-          },
-        },
-        valueBrl: createTransactionDto.valueBrl,
-        reversed: createTransactionDto.reversed,
-        description: createTransactionDto.description,
+  async create(createTransactionDto: CreateTransactionDto, fromUserId: number) {
+    const toUser = await this.prisma.user.findUnique({
+      where: {
+        email: createTransactionDto.sentToUserEmail,
       },
     });
 
-    return transaction;
+    if (!toUser) {
+      throw new Error('User not found');
+    }
+    try {
+      const transaction = await this.prisma.transaction.create({
+        data: {
+          sentFromUser: {
+            connect: {
+              id: Number(fromUserId),
+            },
+          },
+          sentToUser: {
+            connect: {
+              id: toUser.id,
+            },
+          },
+          valueBrl: createTransactionDto.valueBrl,
+          reversed: createTransactionDto.reversed,
+          description: createTransactionDto.description,
+        },
+      });
+
+      await this.usersService.addMoney(fromUserId, {
+        amount: Number(createTransactionDto.valueBrl),
+      });
+      return transaction;
+    } catch (error) {
+      throw new Error('Error creating transaction');
+    }
   }
 
   async createReverseTransaction(id: number) {
@@ -193,6 +179,9 @@ export class TransactionsService {
       },
     });
 
+    await this.usersService.addMoney(transactionToReverse.sentFromUser.id, {
+      amount: Number(transactionToReverse.valueBrl),
+    });
     return transaction;
   }
 

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   Param,
   Post,
   Put,
@@ -15,7 +16,7 @@ import { TransactionsService } from './transactions.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { Request, Response } from 'express';
+import { Request, response, Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/auth.guard';
 import { PaginationDTO } from 'src/dtos/pagination';
 
@@ -25,8 +26,8 @@ export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
   @Get()
-  // @ApiBearerAuth()
-  // @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   async getAll(
     @Query() pagination: PaginationDTO,
     @Res() response: Response,
@@ -34,8 +35,7 @@ export class TransactionsController {
   ) {
     try {
       const res = await this.transactionsService.getAllWithPagination(
-        // Number(req.user['id']),
-        1,
+        Number(req.user['id']),
         Number(pagination.page),
         Number(pagination.itemsPerPage),
         pagination.orderBy,
@@ -58,15 +58,17 @@ export class TransactionsController {
   @Post(':userId')
   async create(
     @Body() createTransactionDto: CreateTransactionDto,
-    @Param('userId') userId: number,
     @Req() req: Request,
   ) {
-    const fromUserId = req.user['id'];
-    return await this.transactionsService.create(
-      createTransactionDto,
-      fromUserId,
-      userId,
-    );
+    try {
+      const fromUserId = req.user['id'];
+      return await this.transactionsService.create(
+        createTransactionDto,
+        fromUserId,
+      );
+    } catch (error) {
+      throw new HttpException(error.message, 400);
+    }
   }
 
   @ApiBearerAuth()

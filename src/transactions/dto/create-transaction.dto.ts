@@ -3,8 +3,8 @@ import {
   IsDecimal,
   IsBoolean,
   IsString,
-  IsNumber,
   IsOptional,
+  IsEmail,
 } from 'class-validator';
 
 export class CreateTransactionDto {
@@ -22,10 +22,6 @@ export class CreateTransactionDto {
   description: string;
 
   @ApiProperty()
-  @IsNumber()
-  sentFromUserId: number;
-
-  @ApiProperty()
-  @IsNumber()
-  sentToUserId: number;
+  @IsEmail()
+  sentToUserEmail: string;
 }
