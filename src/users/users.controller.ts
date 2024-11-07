@@ -22,7 +22,6 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async addMoney(@Body() AddMoneyDto: AddMoneyDto, @Req() req: Request) {
-    console.log(req.user);
     const UserId = Number(req.user['id']);
     return this.usersService.addMoney(UserId, AddMoneyDto);
   }

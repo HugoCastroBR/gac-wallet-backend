@@ -25,7 +25,6 @@ export class AuthService {
       throw new Error('User not found');
     }
 
-    // Compare the entered password with the hashed password in the database
     const validatePassword = await bcrypt.compare(password, user.password);
 
     if (!validatePassword) {
@@ -42,12 +41,10 @@ export class AuthService {
   async register(registerUserDto: RegisterUserDto): Promise<any> {
     const { email, password, name, confirmPassword } = registerUserDto;
 
-    // Check if the passwords match
     if (password !== confirmPassword) {
       throw new Error('Passwords do not match');
     }
 
-    // Check if a user with the same email already exists
     const existingUser = await this.prismaService.user.findUnique({
       where: { email },
     });

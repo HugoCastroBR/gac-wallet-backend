@@ -120,6 +120,22 @@ export class TransactionsService {
       },
     });
 
+    const fromUser = await this.prisma.user.findUnique({
+      where: {
+        id: Number(fromUserId),
+      },
+    });
+
+    if (!fromUser) {
+      throw new Error('User not found');
+    }
+
+    if (
+      Number(fromUser.accountValueBrl) < Number(createTransactionDto.valueBrl)
+    ) {
+      throw new Error('Insuficient funds');
+    }
+
     if (!toUser) {
       throw new Error('User not found');
     }
@@ -142,9 +158,14 @@ export class TransactionsService {
         },
       });
 
-      await this.usersService.addMoney(fromUserId, {
+      await this.usersService.removeMoney(fromUser.id, {
         amount: Number(createTransactionDto.valueBrl),
       });
+
+      await this.usersService.addMoney(toUser.id, {
+        amount: Number(createTransactionDto.valueBrl),
+      });
+
       return transaction;
     } catch (error) {
       throw new Error('Error creating transaction');
@@ -179,6 +200,9 @@ export class TransactionsService {
       },
     });
 
+    await this.usersService.removeMoney(transactionToReverse.sentToUser.id, {
+      amount: Number(transactionToReverse.valueBrl),
+    });
     await this.usersService.addMoney(transactionToReverse.sentFromUser.id, {
       amount: Number(transactionToReverse.valueBrl),
     });

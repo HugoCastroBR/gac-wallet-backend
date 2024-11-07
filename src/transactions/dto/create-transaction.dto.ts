@@ -1,15 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsDecimal,
   IsBoolean,
   IsString,
   IsOptional,
   IsEmail,
+  IsNumber,
 } from 'class-validator';
 
 export class CreateTransactionDto {
   @ApiProperty()
-  @IsDecimal()
+  @IsNumber()
   valueBrl: number;
 
   @ApiProperty()

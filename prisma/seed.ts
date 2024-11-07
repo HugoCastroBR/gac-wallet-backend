@@ -13,7 +13,6 @@ async function main() {
       accountValueBrl: 0,
     },
   });
-  console.log(HugoCastro);
 }
 
 main()

@@ -16,7 +16,7 @@ import { TransactionsService } from './transactions.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { Request, response, Response } from 'express';
+import { Request, Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/auth.guard';
 import { PaginationDTO } from 'src/dtos/pagination';
 
@@ -55,7 +55,7 @@ export class TransactionsController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @Post(':userId')
+  @Post()
   async create(
     @Body() createTransactionDto: CreateTransactionDto,
     @Req() req: Request,

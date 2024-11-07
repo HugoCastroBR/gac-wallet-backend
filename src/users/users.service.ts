@@ -121,6 +121,20 @@ export class UsersService {
     return user;
   }
 
+  async removeMoney(id: number, AddMoneyDto: AddMoneyDto) {
+    const verifyIfUserExists = await this.findOne(id);
+    if (!verifyIfUserExists) {
+      throw new Error('User not found');
+    }
+    const oldAmount = verifyIfUserExists.accountValueBrl;
+    const newAmount = Number(oldAmount) - Number(AddMoneyDto.amount);
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: { accountValueBrl: newAmount },
+    });
+    return user;
+  }
+
   async getUserByEmail(email: string) {
     try {
       const user = await this.prisma.user.findUnique({
